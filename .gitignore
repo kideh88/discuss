@@ -1,4 +1,5 @@
 config/
+.idea/
 
 mysql-connector-license.txt
 mysql-connector-java-5.1.26-bin.jar
