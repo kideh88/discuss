@@ -1,5 +1,6 @@
 <?php
 class Data {
+    
     private $objPDO;
 
     public function __construct($arrConfig) {
