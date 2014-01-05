@@ -1,6 +1,7 @@
 <?php
 
-class User extends Discuss {
+class UserModel extends BaseModel {
+
     public function __construct() {
 
     }
