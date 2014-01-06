@@ -10,7 +10,10 @@ class BaseModel {
         require_once($this->_strBasePath . '/config/DBConfig.include.php');
         require_once($this->_strBasePath . '/models/Data.class.php');
         $objDataClass = new Data($arrConnectionConfig);
-        $this->_objPDO = $objDataClass->pdo();
+        if(is_object($objDataClass) && method_exists($objDataClass, 'pdo')) {
+            $this->_objPDO = $objDataClass->pdo();
+        }
+
 
     }
 

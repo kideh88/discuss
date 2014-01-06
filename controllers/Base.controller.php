@@ -1,6 +1,8 @@
 <?php
 
 
+// private only accessible from inside BASE
+// protected can be accessed by extended Controllers (parent::method())
 
 class BaseController {
     private $_strBasePath;
@@ -26,18 +28,31 @@ class BaseController {
 
     }
 
-    // private only accessible from inside BASE
-    // protected can be accessed by extended Controllers (parent::method())
-    public function test() {
-//        return AccessHelper::validateParameters();
-    }
-
     private function _runRequest($strPostRequest) {
 
-        return AccessHelper::validateRequest($strPostRequest);
-
-//        $objClass = new $strControllerName
+        $arrAllowedRequest = AccessHelper::validateRequest($strPostRequest);
+        if(!$arrAllowedRequest) {
+            $arrResponse = array(
+                'error' => true
+                , 'message' => 'Request not allowed'
+            );
+            return json_encode($arrResponse);
+        }
+        $strController = $arrAllowedRequest['strControllerName'].'Controller';
+        $this->_requireController($arrAllowedRequest['strControllerName']);
+        $objClass = new $strController();
+        $mixReturnData = $objClass->$arrAllowedRequest['strMethodName']($arrAllowedRequest['arrParameters']);
+        $arrResponse = array(
+            'error' => false
+            , 'data' => $mixReturnData
+        );
+        return json_encode($arrResponse);
 
     }
 
+    private function _requireController($strClassName) {
+        if(!class_exists($strClassName)) {
+            require_once($this->_strBasePath . '/controllers/' . $strClassName . '.controller.php');
+        }
+    }
 }

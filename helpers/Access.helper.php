@@ -57,7 +57,6 @@ class AccessHelper {
 
     }
 
-
     public static function setAccessArray($arrConfig) {
         self::$_arrAccess = $arrConfig;
     }
