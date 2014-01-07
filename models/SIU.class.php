@@ -4,7 +4,8 @@
  * Safe Image Upload: Image redrawing and uploading class
  *
  * @author  Kim Dehmlow <kim@bettercollective.com>
- * @since   2013-09-11
+ * @since   2012-11-14
+ * @version 2013-09-11
  *
  */
 class SafeImageUploader {
