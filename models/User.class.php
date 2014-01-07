@@ -10,7 +10,7 @@ class UserModel extends BaseModel {
     }
 
 
-    private function checkUserDataExists($strUsername, $strEmail) {
+    private function _checkUserDataExists($strUsername, $strEmail) {
         $intExisting = 0;
 
         $strCheckExistingStatement = "SELECT COUNT(id) FROM " . $this->_strTablePrefix . "users WHERE email LIKE :email "
