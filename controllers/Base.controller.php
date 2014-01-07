@@ -6,9 +6,10 @@
 
 class BaseController {
     private $_strBasePath;
-    private $_objBaseModel;
+    protected $_objBaseModel;
 
     public function __construct($strPostRequest = null) {
+        require_once($this->_strBasePath . '/helpers/Session.helper.php');
 
         $this->_strBasePath = $_SERVER['DOCUMENT_ROOT'] . '/discuss';
         global $objBaseModel;

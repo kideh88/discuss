@@ -19,6 +19,11 @@ class BaseModel {
 
     }
 
+    public function requireModel($strClassName) {
+        if(!class_exists($strClassName)) {
+            require_once($this->_strBasePath . '/models/' . $strClassName . '.class.php');
+        }
+    }
 
 
 }

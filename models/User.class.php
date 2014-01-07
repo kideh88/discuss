@@ -7,7 +7,6 @@ class UserModel extends BaseModel {
     public function __construct() {
         $this->_intBlockedTime = 300;
 
-
     }
 
 
@@ -90,8 +89,53 @@ class UserModel extends BaseModel {
         }
     }
 
+    public function userLoggedOut() {
+        if(session_destroy()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
-    private function _setFailedAttempt($strUsername, $intClientIpLong, $intAttempts) {
+    public function userLoggedIn($strUsername, $strSalt, $strPassword) {
+        $strLoginStatement = "SELECT id, user_name, is_admin FROM " . $this->_strTablePrefix . "users "
+            . "WHERE user_name LIKE :uname AND password LIKE :pass";
+
+        $objLoginPDO = $this->_objPDO->prepare($strLoginStatement);
+
+        $strHashedPassword = $this->_getHashedPassword($strSalt, $strPassword);
+
+        $objLoginPDO->bindValue(':uname', $strUsername, PDO::PARAM_STR);
+        $objLoginPDO->bindValue(':pass', $strHashedPassword, PDO::PARAM_STR);
+        if($objLoginPDO->execute()) {
+            $arrUserData = $objLoginPDO->fetch(PDO::FETCH_ASSOC);
+            if(!$arrUserData) {
+                return false;
+            }
+            $intUserId = (int)$arrUserData['id'];
+            if(is_int($intUserId) && $intUserId > 0) {
+                $arrSessionData['blnLoggedIn'] = true;
+                $arrSessionData['intUserId'] = $intUserId;
+                $arrSessionData['blnIsAdmin'] = (bool)$arrUserData['is_admin'];
+                $arrSessionData['strUsername'] = $arrUserData['user_name'];
+                return $arrSessionData;
+            }
+        }
+
+        return false;
+    }
+
+    public function getClientIpLong() {
+        $strClientIp = $_SERVER['REMOTE_ADDR'];
+        return ip2long($strClientIp);
+    }
+
+    private function _getHashedPassword($strSalt, $strPassword) {
+        return hash('sha256', $strPassword.$strSalt);
+    }
+
+    public function setFailedAttempt($strUsername, $intClientIpLong, $intAttempts) {
         $intTimestamp = time();
         $intAttempts += 1;
         $strResetStatement = "UPDATE " . $this->_strTablePrefix . "users SET `ip_address` = :ip , "
@@ -109,6 +153,53 @@ class UserModel extends BaseModel {
             return false;
         }
 
+    }
+
+    public function getUserLoginData($strUsername) {
+        $strSaltStatement = "SELECT salt, failed_attempts, last_attempt, ip_address FROM " . $this->_strTablePrefix . "users "
+            . "WHERE user_name LIKE :uname";
+        $objLoginDataPDO = $this->_objPDO->prepare($strSaltStatement);
+        $objLoginDataPDO->bindValue(':uname', $strUsername, PDO::PARAM_STR);
+        if($objLoginDataPDO->execute()) {
+            $arrLoginData = $objLoginDataPDO->fetch(PDO::FETCH_ASSOC);
+            if($arrLoginData) {
+                return $arrLoginData;
+            }
+        }
+        return false;
+    }
+
+    public function checkUserIsBlocked($intAttempts, $intLastIpLong, $intLastAttemptTime) {
+
+        $intUserIpLong = $this->getClientIpLong();
+        if($intAttempts > 2) {
+            if($intLastIpLong !== $intUserIpLong) {
+                return false;
+            }
+            if(($intLastAttemptTime + $this->_intBlockedTime) > time()) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    public function resetLoginAttempts($intUserId) {
+        $intTimestamp = time();
+        $intClientIpLong = $this->getClientIpLong();
+        $strResetStatement = "UPDATE " . $this->_strTablePrefix . "users SET `ip_address` = :ip , "
+            . "`last_attempt` = :time, `failed_attempts` = 0 WHERE `id` = :userid";
+
+        $objResetAttemptsPDO = $this->_objPDO->prepare($strResetStatement);
+        $objResetAttemptsPDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        $objResetAttemptsPDO->bindValue(':time', $intTimestamp, PDO::PARAM_INT);
+        $objResetAttemptsPDO->bindValue(':ip', $intClientIpLong, PDO::PARAM_INT);
+        if($objResetAttemptsPDO->execute()) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
 
