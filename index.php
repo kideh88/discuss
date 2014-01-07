@@ -5,6 +5,9 @@
         <title>Discuss</title>
         <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" href="css/styles.css">
+        <script src="js/general.js"></script>
+        <script src="js/ajax-connector.js"></script>
+        <script src="js/form-submit.js"></script>
         <script src="js/jquery-1.10.2.min.js"></script>
         <script src="js/main.js"></script>
     </head>
