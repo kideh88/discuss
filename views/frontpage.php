@@ -1,6 +1,6 @@
 <div class="col-md-6">
     <h2>Sign in</h2>
-    <form role="form" id="userLogin" onsubmit="sendFormData(event, showResponse)" >
+    <form role="form" method="post" onsubmit="sendFormData(event, reloadCallback)" data-type="User" data-action="doUserLogin" >
         <div class="form-group">
             <label for="LoginUsername">Username</label>
             <input type="text" class="form-control" id="LoginUsername" name="strUsername" placeholder="Username">
@@ -11,7 +11,7 @@
         </div>
         <div class="checkbox">
             <label>
-                <input type="checkbox"> Remember me
+                <input type="checkbox" name="blnRemember" > Remember me
             </label>
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
@@ -19,7 +19,7 @@
 </div>
 <div class="col-md-6">
     <h2>Sign up</h2>
-    <form role="form" id="userRegister" onsubmit="sendFormData(event, showResponse)">
+    <form role="form" method="post" onsubmit="sendFormData(event, showFeedback)" data-type="User" data-action="doUserRegister" >
         <div class="form-group">
             <label for="RegisterEmail">Email address</label>
             <input type="email" class="form-control" id="RegisterEmail" name="strEmail" placeholder="Email">

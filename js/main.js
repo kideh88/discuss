@@ -7,8 +7,11 @@ $( document ).ready(function() {
 //        sendFormData(event, showResponse);
 //    });
 //
-//    var objRegisterForm = document.getElementById('userRegister');
-//    objRegisterForm.addEventListener('onsubmit', function(event) {
-//        sendFormData(event, showResponse);
-//    });
+    var objLogoutLink = document.getElementById('link-log-out');
+    if(objLogoutLink) {
+        addEvent(objLogoutLink, 'click', function() {
+            customAjax('User', 'doUserLogout', null, reloadCallback);
+        });
+    }
+
 });

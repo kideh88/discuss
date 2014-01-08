@@ -16,7 +16,7 @@ function customAjax(strController, strMethod, objParams, callback) {
             }
             catch(objException) {
                 xmlHttp.responseJSON = {
-                    "error" : true
+                    "success" : false
                     , "message": "JSON Parse error " + objException.message
                 };
             }

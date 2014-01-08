@@ -3,14 +3,17 @@
 class UserModel extends BaseModel {
 
     private $_intBlockedTime;
+    protected $_strTablePrefix;
+    protected $_objPDO;
 
-    public function __construct() {
+    public function __construct(BaseModel &$objBaseModel) {
+        $this->_objPDO = $objBaseModel->_objPDO;
         $this->_intBlockedTime = 300;
-
+        $this->_strTablePrefix = $objBaseModel->_strTablePrefix;
     }
 
 
-    private function _checkUserDataExists($strUsername, $strEmail) {
+    public function checkUserDataExists($strUsername, $strEmail) {
         $intExisting = 0;
 
         $strCheckExistingStatement = "SELECT COUNT(id) FROM " . $this->_strTablePrefix . "users WHERE email LIKE :email "
@@ -26,24 +29,20 @@ class UserModel extends BaseModel {
     }
 
 
-    public function createNewUser($strUsername, $strPassword, $strFirstname, $strLastname, $strEmail) {
+    public function createNewUser($strUsername, $strPassword, $strEmail) {
 
-        $strNewUserStatement = "INSERT INTO " . $this->_strTablePrefix . "users ( `user_name`, `first_name`, "
-            . "`last_name`, `email`, `last_attempt`, `password`, `salt`, `ip_address`, `reset_token` ) "
-            . "VALUES ( :uname, :fname, :lname, :email, :time, :pass, :salt, :ip, :token )";
+        $strNewUserStatement = "INSERT INTO " . $this->_strTablePrefix . "users ( `user_name`, `email`, `last_attempt`, "
+            . "`password`, `salt`, `ip_address`, `reset_token` ) VALUES ( :uname, :email, :time, :pass, :salt, :ip, :token )";
 
         $objNewUserPDO = $this->_objPDO->prepare($strNewUserStatement);
 
-        $strSalt = Data::createSalt(20);
-        $strHashedPassword = hash('sha256', $strPassword.$strSalt);
-        $strToken = substr($strHashedPassword, 16, 10);
-        $strClientIp = $_SERVER['REMOTE_ADDR'];
-        $intClientIpLong =  ip2long($strClientIp);
+        $strSalt = HashHelper::createSalt(20);
+        $strHashedPassword = HashHelper::makeHash($strPassword, $strSalt);
+        $strToken = HashHelper::getToken($strHashedPassword);
+        $intClientIpLong =  $this->getClientIpLong();
         $intTimestamp = time();
 
         $objNewUserPDO->bindValue(':uname', $strUsername, PDO::PARAM_STR);
-        $objNewUserPDO->bindValue(':fname', $strFirstname, PDO::PARAM_STR);
-        $objNewUserPDO->bindValue(':lname', $strLastname, PDO::PARAM_STR);
         $objNewUserPDO->bindValue(':email', $strEmail, PDO::PARAM_STR);
         $objNewUserPDO->bindValue(':pass', $strHashedPassword, PDO::PARAM_STR);
         $objNewUserPDO->bindValue(':time', $intTimestamp, PDO::PARAM_INT);
@@ -60,18 +59,17 @@ class UserModel extends BaseModel {
 
     }
 
-    public function resetUserPassword($strNewPassword, $strEmail, $strToken) {
+    public function resetUserPassword($strNewPassword, $strEmail, $strOldToken) {
         $strResetStatement = "UPDATE " . $this->_strTablePrefix . "users SET `password` = :pass , "
             . "`reset_token` = :newtoken, `last_attempt` = :time, `ip_address` = :ip, `salt` = :salt "
             . "WHERE `email` LIKE :email AND `reset_token` LIKE :oldtoken";
 
         $objNewPasswordPDO = $this->_objPDO->prepare($strResetStatement);
 
-        $strSalt = Data::createSalt(20);
-        $strHashedPassword = hash('sha256', $strNewPassword.$strSalt);
-        $strToken = substr($strHashedPassword, 16, 10);
-        $strClientIp = $_SERVER['REMOTE_ADDR'];
-        $intClientIpLong =  ip2long($strClientIp);
+        $strSalt = HashHelper::createSalt(20);
+        $strHashedPassword = HashHelper::makeHash($strNewPassword, $strSalt);
+        $strToken = HashHelper::getToken($strHashedPassword);
+        $intClientIpLong =  $this->getClientIpLong();
         $intTimestamp = time();
 
         $objNewPasswordPDO->bindValue(':pass', $strHashedPassword, PDO::PARAM_STR);
@@ -80,7 +78,7 @@ class UserModel extends BaseModel {
         $objNewPasswordPDO->bindValue(':ip', $intClientIpLong, PDO::PARAM_INT);
         $objNewPasswordPDO->bindValue(':salt', $strSalt, PDO::PARAM_STR);
         $objNewPasswordPDO->bindValue(':time', $intTimestamp, PDO::PARAM_INT);
-        $objNewPasswordPDO->bindValue(':oldtoken', $strToken, PDO::PARAM_STR);
+        $objNewPasswordPDO->bindValue(':oldtoken', $strOldToken, PDO::PARAM_STR);
         if($objNewPasswordPDO->execute()) {
             return true;
         }
@@ -104,7 +102,7 @@ class UserModel extends BaseModel {
 
         $objLoginPDO = $this->_objPDO->prepare($strLoginStatement);
 
-        $strHashedPassword = $this->_getHashedPassword($strSalt, $strPassword);
+        $strHashedPassword = HashHelper::makeHash($strPassword, $strSalt);
 
         $objLoginPDO->bindValue(':uname', $strUsername, PDO::PARAM_STR);
         $objLoginPDO->bindValue(':pass', $strHashedPassword, PDO::PARAM_STR);
@@ -131,9 +129,6 @@ class UserModel extends BaseModel {
         return ip2long($strClientIp);
     }
 
-    private function _getHashedPassword($strSalt, $strPassword) {
-        return hash('sha256', $strPassword.$strSalt);
-    }
 
     public function setFailedAttempt($strUsername, $intClientIpLong, $intAttempts) {
         $intTimestamp = time();

@@ -9,10 +9,12 @@ class SessionHelper {
             , 'blnIsAdmin' => false
             , 'strUsername' => ''
         );
-        if(!isset($_SESSION)) {
+        if(session_id() === '' || !isset($_SESSION)) {
             session_start();
             foreach($arrDefaultSettings as $strKey => $mixValue) {
-                $_SESSION[$strKey] = $mixValue;
+                if(!array_key_exists($strKey, $_SESSION)) {
+                    $_SESSION[$strKey] = $mixValue;
+                }
             }
         }
 

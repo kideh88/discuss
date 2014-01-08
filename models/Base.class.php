@@ -16,12 +16,14 @@ class BaseModel {
             $this->_objPDO = $objDataClass->pdo();
         }
 
+        require_once($this->_strBasePath . '/helpers/Hash.helper.php');
 
     }
 
-    public function requireModel($strClassName) {
+    public function requireModel($strModelName) {
+        $strClassName = $strModelName .'Model';
         if(!class_exists($strClassName)) {
-            require_once($this->_strBasePath . '/models/' . $strClassName . '.class.php');
+            require_once($this->_strBasePath . '/models/' . $strModelName . '.class.php');
         }
     }
 

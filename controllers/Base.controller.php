@@ -1,19 +1,16 @@
 <?php
 
 
-// private only accessible from inside BASE
-// protected can be accessed by extended Controllers (parent::method())
 
 class BaseController {
-    private $_strBasePath;
+    protected $_strBasePath;
     protected $_objBaseModel;
 
     public function __construct($strPostRequest = null) {
-        require_once($this->_strBasePath . '/helpers/Session.helper.php');
-
         $this->_strBasePath = $_SERVER['DOCUMENT_ROOT'] . '/discuss';
+
         global $objBaseModel;
-        if(!is_object($objBaseModel)) {
+        if(!is_object($objBaseModel) || !($objBaseModel instanceof BaseModel)) {
             require_once($this->_strBasePath . '/models/Base.class.php');
             $objBaseModel = new BaseModel($this->_strBasePath);
         }
@@ -23,6 +20,9 @@ class BaseController {
         require_once($this->_strBasePath . '/config/Access.include.php');
         AccessHelper::setAccessArray($arrAccessPermissions);
 
+
+        require_once($this->_strBasePath . '/config/UserFeedback.include.php');
+        $this->_arrUserErrorMessages = $arrUserFeedback;
         if(null !== $strPostRequest) {
             echo json_encode($this->_runRequest($strPostRequest));
         }
@@ -34,20 +34,24 @@ class BaseController {
         $arrAllowedRequest = AccessHelper::validateRequest($strPostRequest);
         if(!$arrAllowedRequest) {
             $arrResponse = array(
-                'error' => true
+                'success' => false
                 , 'message' => 'Request not allowed'
             );
-            return json_encode($arrResponse);
+            return $arrResponse;
         }
         $strController = $arrAllowedRequest['strControllerName'].'Controller';
         $this->_requireController($arrAllowedRequest['strControllerName']);
-        $objClass = new $strController();
-        $mixReturnData = $objClass->$arrAllowedRequest['strMethodName']($arrAllowedRequest['arrParameters']);
-        $arrResponse = array(
-            'error' => false
-            , 'data' => $mixReturnData
-        );
-        return json_encode($arrResponse);
+        $objClass = new $strController($this);
+        $arrReturnData = $objClass->$arrAllowedRequest['strMethodName']($arrAllowedRequest['arrParameters']);
+
+        if(array_key_exists('intFeedbackCode', $arrReturnData)) {
+            $intFeedbackCode = &$arrReturnData['intFeedbackCode'];
+            if(array_key_exists($intFeedbackCode, $this->_arrUserErrorMessages)) {
+                $arrReturnData['message'] = $this->_arrUserErrorMessages[$intFeedbackCode];
+            }
+            unset($intFeedbackCode);
+        }
+        return $arrReturnData;
 
     }
 

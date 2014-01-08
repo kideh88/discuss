@@ -1,3 +1,11 @@
+<?php
+require_once($_SERVER['DOCUMENT_ROOT'] . '/discuss/helpers/Session.helper.php');
+SessionHelper::startSession();
+if((!isset($_GET["page"]) || $_GET["page"] === "frontpage")  && $_SESSION['blnLoggedIn']) {
+    header("Location: /discuss/index.php?page=lobby");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html>
     <head>
@@ -5,28 +13,28 @@
         <title>Discuss</title>
         <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" href="css/styles.css">
-        <script src="js/general.js"></script>
-        <script src="js/ajax-connector.js"></script>
-        <script src="js/form-submit.js"></script>
+        <script src="js/general.js?ver=1.0"></script>
+        <script src="js/ajax-connector.js?ver=1.0"></script>
+        <script src="js/form-submit.js?ver=1.0"></script>
         <script src="js/jquery-1.10.2.min.js"></script>
-        <script src="js/main.js"></script>
+        <script src="js/main.js?ver=1.0"></script>
     </head>
     <body>
         <div class="row head">
             <div class="container">
                 <h1 class="pull-left">Welcome to the chat</h1>
-                <?php if (!isset($_GET["page"]) || $_GET["page"] == "frontpage"): ?>
+                <? if (!isset($_GET["page"]) || $_GET["page"] == "frontpage"): ?>
                     <a href="index.php?page=lobby"><button type="button" id="continue" class="btn btn-primary pull-right">Continue without login</button></a>
-                <?php else: ?>
+                <? else: ?>
                     <div class="profilemenu pull-right">
-                        <?php if (isset($_GET["login"])): /* SESSION */ ?>
-                            <a href="index.php?page=profile">Welcome Mikkel</a>
-                            <a href="index.php?page=frontpage">Sign out</a>
-                        <?php else: ?>
+                        <? if ($_SESSION["blnLoggedIn"]): /* SESSION */ ?>
+                            Welcome <a href="index.php?page=profile"><?php echo $_SESSION["strUsername"]; ?></a>
+                            <a href="#" id="link-log-out" >Sign out</a>
+                        <? else: ?>
                             <a href="index.php?page=frontpage">Sign in / Sign up</a>
-                        <?php endif; ?>
+                        <? endif; ?>
                     </div>
-                <?php endif; ?>
+                <? endif; ?>
             </div>
         </div>
         <div class="container">
