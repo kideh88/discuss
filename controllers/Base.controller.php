@@ -20,9 +20,8 @@ class BaseController {
         require_once($this->_strBasePath . '/config/Access.include.php');
         AccessHelper::setAccessArray($arrAccessPermissions);
 
+        require_once($this->_strBasePath . '/helpers/Feedback.helper.php');
 
-        require_once($this->_strBasePath . '/config/UserFeedback.include.php');
-        $this->_arrUserErrorMessages = $arrUserFeedback;
         if(null !== $strPostRequest) {
             echo json_encode($this->_runRequest($strPostRequest));
         }
@@ -46,9 +45,7 @@ class BaseController {
 
         if(array_key_exists('intFeedbackCode', $arrReturnData)) {
             $intFeedbackCode = &$arrReturnData['intFeedbackCode'];
-            if(array_key_exists($intFeedbackCode, $this->_arrUserErrorMessages)) {
-                $arrReturnData['message'] = $this->_arrUserErrorMessages[$intFeedbackCode];
-            }
+            $arrReturnData['message'] = FeedbackHelper::getMessage($intFeedbackCode);
             unset($intFeedbackCode);
         }
         return $arrReturnData;

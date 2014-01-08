@@ -86,13 +86,55 @@ class UserController extends BaseController {
     }
 
     public function doUserLogout() {
-        $arrResponse['success'] = $this->_objUserModel->userLoggedOut();
+        $arrResponse['success'] = false;
+        if($_SESSION['blnLoggedIn']) {
+            $arrResponse['success'] = $this->_objUserModel->userLoggedOut();
+            $this->_objUserModel->setUserInactive($_SESSION['intUserId']);
+        }
+        return $arrResponse;
+    }
+
+    public function doUpdateProfile($arrParameters) {
+        $arrResponse['success'] = false;
+        $arrResponse['intFeedbackCode'] = 17;
+        if(!$_SESSION['blnLoggedIn']) {
+            $arrResponse['intFeedbackCode'] = 15;
+            return $arrResponse;
+        }
+        $intUserId = $_SESSION['intUserId'];
+        $strImageName = $arrParameters['strImage'];
+        $strProfileText = $arrParameters['strText'];
+        $arrResponse['success'] = $this->_objUserModel->updateUserProfile($intUserId, $strImageName, $strProfileText);
+        if($arrResponse['success']) {
+            $arrResponse['intFeedbackCode'] = 16;
+        }
         return $arrResponse;
     }
 
     public function getOnlineUsers() {
         $arrUsers = $this->_objUserModel->getOnlineUserList();
         return $arrUsers;
+    }
+
+    public function getUserProfile($strUsername) {
+        $intUserId = $this->_objUserModel->getIdByUsername($strUsername);
+        $arrUserData = array(
+            'strUsername' => 'Unknown'
+            , 'strProfileImage' => 'default.jpg'
+            , 'strProfileText' => FeedbackHelper::getMessage(14)
+            , 'intUserId' => $intUserId
+        );
+        if(0 === $intUserId) {
+            return $arrUserData;
+        }
+        else {
+            $arrProfileData = $this->_objUserModel->getUserProfile($intUserId);
+            $arrUserData = array_replace($arrUserData, $arrProfileData);
+            $arrUserData['strUsername'] = $this->_objUserModel->getUsernameById($intUserId);
+        }
+
+        return $arrUserData;
+
     }
 
 }

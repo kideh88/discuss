@@ -9,6 +9,8 @@ if((!isset($_GET["page"]) || $_GET["page"] === "frontpage")  && $_SESSION['blnLo
 require_once($_SERVER['DOCUMENT_ROOT'] . '/discuss/controllers/Base.controller.php');
 $objBaseController = new BaseController();
 
+$objBaseController->_requireController('User');
+$objUserController = new UserController();
 
 ?>
 <!DOCTYPE html>
@@ -33,7 +35,7 @@ $objBaseController = new BaseController();
                 <? else: ?>
                     <div class="profilemenu pull-right">
                         <? if ($_SESSION["blnLoggedIn"]): /* SESSION */ ?>
-                            Welcome <a href="index.php?page=profile"><?php echo $_SESSION["strUsername"]; ?></a>
+                            Welcome <a href="index.php?page=profile&amp;user=<? echo $_SESSION['strUsername']?>"><?php echo $_SESSION["strUsername"]; ?></a>
                             <a href="#" id="link-log-out" >Sign out</a>
                         <? else: ?>
                             <a href="index.php?page=frontpage">Sign in / Sign up</a>

@@ -1,13 +1,13 @@
-<IfModule mod_rewrite.c>
-
-#activates RewriteEngine
-RewriteEngine on
-
-# This checks for existing folders (-d) and files (-f)
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME} !-f
-
-# Tells mod_rewrite to stop processing rules after this one
-RewriteRule ^ index.php [L]
-
-</IfModule>
+#<IfModule mod_rewrite.c>
+#
+##activates RewriteEngine
+#RewriteEngine on
+#
+## This checks for existing folders (-d) and files (-f)
+#RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteCond %{REQUEST_FILENAME} !-f
+#
+## Tells mod_rewrite to stop processing rules after this one
+#RewriteRule ^ index.php [L]
+#
+#</IfModule>

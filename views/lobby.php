@@ -1,13 +1,9 @@
 <?php
-if(!is_object($objUserController)) {
-    $objBaseController->_requireController('User');
-    $objUserController = new UserController();
-}
 $arrUserList = $objUserController->getOnlineUsers();
 ?>
 <div class="col-md-4">
 
-    <h2>Online users (<? echo count($arrUserList); ?></h2>
+    <h2>Online users (<? echo count($arrUserList); ?>)</h2>
 
     <table class="table">
         <thead>
@@ -16,7 +12,7 @@ $arrUserList = $objUserController->getOnlineUsers();
         <tbody>
             <?php foreach($arrUserList as $arrUser): ?>
             <tr>
-                <td><a href="index.php?page=profile&amp;userid=<? echo $arrUser['id']?>"><? echo $arrUser['user_name'] ?></a><td>
+                <td><a href="index.php?page=profile&amp;user=<? echo $arrUser['user_name']?>"><? echo $arrUser['user_name'] ?></a><td>
                 <td><button type="button" class="btn btn-primary pull-right join">Start private chat</button><td>
             </tr>
             <? endforeach; ?>

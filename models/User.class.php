@@ -215,10 +215,26 @@ class UserModel extends BaseModel {
         }
     }
 
+    public function setUserInactive($intUserId) {
+        $intTimestamp = time() - ($this->_intActiveTime * 2);
+        $strResetStatement = "UPDATE " . $this->_strTablePrefix . "users SET `last_active` = :time "
+            . "WHERE `id` = :userid";
+
+        $objResetAttemptsPDO = $this->_objPDO->prepare($strResetStatement);
+        $objResetAttemptsPDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        $objResetAttemptsPDO->bindValue(':time', $intTimestamp, PDO::PARAM_INT);
+        if($objResetAttemptsPDO->execute()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     public function getOnlineUserList() {
         $intTimeBuffer = time() - $this->_intActiveTime;
         $arrUserList = array();
-        $strOnlineUserStatement = "SELECT id, user_name FROM " . $this->_strTablePrefix ."users WHERE last_active < :time";
+        $strOnlineUserStatement = "SELECT id, user_name FROM " . $this->_strTablePrefix ."users WHERE last_active > :time";
         $objOnlineUserPDO = $this->_objPDO->prepare($strOnlineUserStatement);
         $objOnlineUserPDO->bindValue(':time', $intTimeBuffer, PDO::PARAM_INT);
         if($objOnlineUserPDO->execute()) {
@@ -228,4 +244,69 @@ class UserModel extends BaseModel {
 
     }
 
+    public function getIdByUsername($strUsername) {
+        $strUserIdStatement = "SELECT id FROM " . $this->_strTablePrefix ."users WHERE user_name LIKE :uname";
+        $objUserIdPDO = $this->_objPDO->prepare($strUserIdStatement);
+        $objUserIdPDO->bindValue(':uname', $strUsername, PDO::PARAM_STR);
+        if($objUserIdPDO->execute()) {
+            $intUserId = (int)$objUserIdPDO->fetchColumn();
+            return $intUserId;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    public function getUsernameById($intUserId) {
+        $strUsernameStatement = "SELECT user_name FROM " . $this->_strTablePrefix ."users WHERE id = :userid";
+        $objUsernamePDO = $this->_objPDO->prepare($strUsernameStatement);
+        $objUsernamePDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        if($objUsernamePDO->execute()) {
+            $strUsername = $objUsernamePDO->fetchColumn();
+            return $strUsername;
+        }
+        else {
+            return '';
+        }
+    }
+
+    public function getUserProfile($intUserId) {
+        $arrUserData = array();
+        $strGetProfileStatement = "SELECT image, text from " . $this->_strTablePrefix ."user_info WHERE users_fk = :id";
+        $objUserProfilePDO = $this->_objPDO->prepare($strGetProfileStatement);
+        $objUserProfilePDO->bindParam(':id', $intUserId, PDO::PARAM_INT);
+        if($objUserProfilePDO->execute()) {
+            $arrProfileData = $objUserProfilePDO->fetch(PDO::FETCH_ASSOC);
+            if(0 < count($arrProfileData)) {
+                $arrUserData = array(
+                    'strProfileImage' => $arrProfileData['image']
+                    , 'strProfileText' => $arrProfileData['text']
+                );
+            }
+        }
+        return $arrUserData;
+    }
+
+    public function updateUserProfile($intUserId, $strProfileImage, $strProfileText) {
+        $strUpdateProfileStatement = "INSERT INTO " . $this->_strTablePrefix . "user_info ( `image`, `text` )"
+            . " VALUES ( :image, :text ) WHERE `users_fk` = :userid"
+            . " ON DUPLICATE KEY UPDATE `image` = :image, `text` = :text";
+
+        $objUpdateProfilePDO = $this->_objPDO->prepare($strUpdateProfileStatement);
+        $objUpdateProfilePDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        $objUpdateProfilePDO->bindValue(':image', $strProfileImage, PDO::PARAM_STR);
+        $objUpdateProfilePDO->bindValue(':text', $strProfileText, PDO::PARAM_STR);
+        if($objUpdateProfilePDO->execute()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    }
+
+
+//    private function _setEmptyUserInfo($intUserId) {
+//
+//    }
 }
