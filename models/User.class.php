@@ -10,6 +10,7 @@ class UserModel extends BaseModel {
         $this->_objPDO = $objBaseModel->_objPDO;
         $this->_intBlockedTime = 300;
         $this->_strTablePrefix = $objBaseModel->_strTablePrefix;
+        $this->_intActiveTime = 120;
     }
 
 
@@ -32,7 +33,8 @@ class UserModel extends BaseModel {
     public function createNewUser($strUsername, $strPassword, $strEmail) {
 
         $strNewUserStatement = "INSERT INTO " . $this->_strTablePrefix . "users ( `user_name`, `email`, `last_attempt`, "
-            . "`password`, `salt`, `ip_address`, `reset_token` ) VALUES ( :uname, :email, :time, :pass, :salt, :ip, :token )";
+            . "`last_active`, `password`, `salt`, `ip_address`, `reset_token` ) VALUES ( :uname, :email, :time, :time, "
+            . ":pass, :salt, :ip, :token )";
 
         $objNewUserPDO = $this->_objPDO->prepare($strNewUserStatement);
 
@@ -197,5 +199,33 @@ class UserModel extends BaseModel {
         }
     }
 
+    public function setUserActive($intUserId) {
+        $intTimestamp = time();
+        $strResetStatement = "UPDATE " . $this->_strTablePrefix . "users SET `last_active` = :time "
+            . "WHERE `id` = :userid";
+
+        $objResetAttemptsPDO = $this->_objPDO->prepare($strResetStatement);
+        $objResetAttemptsPDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        $objResetAttemptsPDO->bindValue(':time', $intTimestamp, PDO::PARAM_INT);
+        if($objResetAttemptsPDO->execute()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public function getOnlineUserList() {
+        $intTimeBuffer = time() - $this->_intActiveTime;
+        $arrUserList = array();
+        $strOnlineUserStatement = "SELECT id, user_name FROM " . $this->_strTablePrefix ."users WHERE last_active < :time";
+        $objOnlineUserPDO = $this->_objPDO->prepare($strOnlineUserStatement);
+        $objOnlineUserPDO->bindValue(':time', $intTimeBuffer, PDO::PARAM_INT);
+        if($objOnlineUserPDO->execute()) {
+            $arrUserList = $objOnlineUserPDO->fetchAll(PDO::FETCH_ASSOC);
+        }
+        return $arrUserList;
+
+    }
 
 }

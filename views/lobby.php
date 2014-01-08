@@ -1,19 +1,25 @@
+<?php
+if(!is_object($objUserController)) {
+    $objBaseController->_requireController('User');
+    $objUserController = new UserController();
+}
+$arrUserList = $objUserController->getOnlineUsers();
+?>
 <div class="col-md-4">
-    <h2>Online users</h2>
-    <?php
-        // Insert online users
-    ?>
+
+    <h2>Online users (<? echo count($arrUserList); ?></h2>
+
     <table class="table">
         <thead>
             <tr><th>Name</th><th></th><th></th><th></th></tr>
         </thead>
         <tbody>
-            <?php // foreach online user ?>
+            <?php foreach($arrUserList as $arrUser): ?>
             <tr>
-                <td><a href="index.php?page=profile&amp;userid=0">Mikkel</a><td>
-                <td><a href="index.php?page=chat&amp;chatobject=null"><button type="button" class="btn btn-primary pull-right join">Start private chat</button></a><td>
+                <td><a href="index.php?page=profile&amp;userid=<? echo $arrUser['id']?>"><? echo $arrUser['user_name'] ?></a><td>
+                <td><button type="button" class="btn btn-primary pull-right join">Start private chat</button><td>
             </tr>
-            <?php // end foreach; ?>
+            <? endforeach; ?>
         </tbody>
     </table>
 </div>

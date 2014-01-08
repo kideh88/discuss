@@ -44,6 +44,7 @@ class UserController extends BaseController {
             return $arrResponse;
         }
         $this->_objUserModel->resetLoginAttempts($arrSessionData['intUserId']);
+        $this->_objUserModel->setUserActive($arrSessionData['intUserId']);
         SessionHelper::setSessionValues($arrSessionData);
 
         $arrResponse['success'] = true;
@@ -88,4 +89,10 @@ class UserController extends BaseController {
         $arrResponse['success'] = $this->_objUserModel->userLoggedOut();
         return $arrResponse;
     }
+
+    public function getOnlineUsers() {
+        $arrUsers = $this->_objUserModel->getOnlineUserList();
+        return $arrUsers;
+    }
+
 }

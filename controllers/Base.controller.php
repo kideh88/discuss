@@ -55,7 +55,7 @@ class BaseController {
 
     }
 
-    private function _requireController($strClassName) {
+    public function _requireController($strClassName) {
         if(!class_exists($strClassName)) {
             require_once($this->_strBasePath . '/controllers/' . $strClassName . '.controller.php');
         }

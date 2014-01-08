@@ -5,6 +5,11 @@ if((!isset($_GET["page"]) || $_GET["page"] === "frontpage")  && $_SESSION['blnLo
     header("Location: /discuss/index.php?page=lobby");
     exit;
 }
+
+require_once($_SERVER['DOCUMENT_ROOT'] . '/discuss/controllers/Base.controller.php');
+$objBaseController = new BaseController();
+
+
 ?>
 <!DOCTYPE html>
 <html>
