@@ -10,7 +10,7 @@ function customAjax(strController, strMethod, objParams, callback) {
         xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
     }
     xmlHttp.onreadystatechange = function() {
-        if(4 == xmlHttp.readyState && 200 == xmlHttp.status && '' != xmlHttp.responseText) {
+        if(4 === xmlHttp.readyState && 200 === xmlHttp.status && '' !== xmlHttp.responseText) {
             try {
                 xmlHttp.responseJSON = JSON.parse(xmlHttp.responseText);
             }

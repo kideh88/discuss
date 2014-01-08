@@ -7,7 +7,8 @@ RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 
-# Tells mod_rewrite to stop processing rules after this one
+#Tells mod_rewrite to stop processing rules after this one
+RewriteRule    ^lobby/?$    index.php?page=lobby    [NC,L]
 RewriteRule ^ index.php [L]
 
 </IfModule>
