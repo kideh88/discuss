@@ -63,7 +63,14 @@ class ChatController extends BaseController {
         }
         $this->_objUserModel->setUserActive($intUserId);
         $intChatRoomId = $arrParameters['intChatRoomId'];
-        $intInvitedId = $arrParameters['intInvitedId'];
+        $strUsername = UserInputHelper::clean($arrParameters['strUsername']);
+
+        $intInvitedId = $this->_objUserModel->getIdByUsername($strUsername);
+        if(0 === $intInvitedId) {
+            $arrResponse['intFeedbackCode'] = 5;
+            return $arrResponse;
+        }
+
         if(!$this->_objChatModel->checkChatAccess($intUserId, $intChatRoomId)) {
             $arrResponse['intFeedbackCode'] = 24;
             return $arrResponse;
@@ -76,6 +83,32 @@ class ChatController extends BaseController {
         $arrResponse['success'] = true;
         $arrResponse['intFeedbackCode'] = 26;
         return $arrResponse;
+    }
+
+    public function getPublicChatList() {
+        $arrResponse = array(
+            'success' => false
+        );
+        $arrPublicRoomData = $this->_objChatModel->getPublicRoomList();
+        if(0 === count($arrPublicRoomData)) {
+            $arrResponse['intFeedbackCode'] = 27;
+            return $arrResponse;
+        }
+        foreach($arrPublicRoomData as $arrRoomData) {
+            $arrRoomDetails = $this->_objChatModel->getChatRoomUsers($arrRoomData['intChatId']);
+            $arrRoomData['intUsers'] = count($arrRoomDetails);
+            $arrUserList = array_slice($arrRoomDetails, 0, 9);
+            $strDots = ($arrRoomData['intUsers'] > 10 ? '...' : '');
+            foreach($arrUserList as $arrUserData) {
+                $arrRoomData['strUsers'] .= $arrUserData['strUsername'];
+            }
+            $arrRoomData['strUsers'] .= $strDots;
+            $arrResponse['arrPublicChats'][] = $arrRoomData;
+
+        }
+        $arrResponse['success'] = true;
+        return $arrResponse;
+
     }
 
 }

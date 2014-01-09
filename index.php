@@ -13,6 +13,9 @@ $objUserController = new UserController();
 if($_SESSION['blnLoggedIn']) {
     $objUserController->_objUserModel->setUserActive($_SESSION['intUserId']);
 }
+
+$objBaseController->_requireController('Chat');
+$objChatController = new ChatController();
 ?>
 <!DOCTYPE html>
 <html>

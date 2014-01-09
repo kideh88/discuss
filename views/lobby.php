@@ -1,5 +1,7 @@
 <?php
 $arrUserList = $objUserController->getOnlineUsers();
+$arrPublicChatList = $objChatController->getPublicChatList();
+$arrPublicChatList = $arrPublicChatList['arrPublicChats'];
 ?>
 <div class="col-md-4">
 
@@ -20,7 +22,7 @@ $arrUserList = $objUserController->getOnlineUsers();
     </table>
 </div>
 <div class="col-md-8">
-    <h2>Public chats</h2>
+    <h2>Public chats (<? echo count($arrPublicChatList); ?>)</h2>
     <table class="table">
         <thead>
             <tr>
@@ -31,12 +33,14 @@ $arrUserList = $objUserController->getOnlineUsers();
             </tr>
         </thead>
         <tbody>
+        <?php foreach($arrPublicChatList as $arrPublicRoom): ?>
             <tr>
-                <td>Dummy</td>
-                <td>4</td>
-                <td>Emrah, Kim, Johnny, Mikkel<td>
-                <td><a href="index.php?page=chat&amp;chatobject=null"><button type="button" class="btn btn-primary pull-right join">Join</button></a><td>
+                <td><? echo $arrPublicRoom['strRoomName']?></td>
+                <td><? echo $arrPublicRoom['intUsers']?></td>
+                <td><? echo $arrPublicRoom['strUsers']?><td>
+                <td><a href="index.php?page=chat&amp;chat=<? echo $arrPublicRoom['intChatId']?>"><button type="button" class="btn btn-primary pull-right join">Join</button></a><td>
             </tr>
+        <? endforeach; ?>
         </tbody>
     </table>
     <?php if($_SESSION['blnLoggedIn'] === true): ?>

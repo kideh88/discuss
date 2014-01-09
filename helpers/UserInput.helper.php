@@ -12,7 +12,7 @@ class UserInputHelper {
     }
 
     public static function checkSpecialCharacters($strInput) {
-        $strPattern = '/^\w+$/';
+        $strPattern = '/^[a-zA-Z0-9_ ]*$/';
         preg_match($strPattern, $strInput, $arrMatch);
         if(!$arrMatch) {
             return false;
