@@ -2,6 +2,8 @@
 
 class CookieHelper {
 
+    private static $_cookieName = 'dicuss';
+
     public static function exists($name) {
         return(isset($_COOKIE[$name]));
     }
@@ -10,7 +12,7 @@ class CookieHelper {
         return $_COOKIE[$name];
     }
 
-    public static function put($name, $value, $expiry) {
+    public static function put($name, $value, $expiry = 604800) {
         if (setcookie($name, $value, time() + $expiry, '/')) {
             return true;
         }

@@ -3,12 +3,15 @@
 #activates RewriteEngine
 RewriteEngine on
 
+Options +FollowSymlinks
+RewriteBase /
+
 # This checks for existing folders (-d) and files (-f)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 
 #Tells mod_rewrite to stop processing rules after this one
-RewriteRule    ^lobby/?$    index.php?page=lobby    [NC,L]
+RewriteRule ^([^/]*)$ /index.php?page=$1 [L]
 RewriteRule ^ index.php [L]
 
 </IfModule>
