@@ -10,6 +10,9 @@ var sendFormData = function(objEvent, fcnCallback) {
             if(objLoopedInput.type === 'checkbox') {
                 arrFormData[objLoopedInput.name] = objLoopedInput.checked;
             }
+//            else if(objLoopedInput.type === 'file' && objLoopedInput.value) {
+//                arrFormData[objLoopedInput.name] = objLoopedInput.value;
+//            }
             else {
                 arrFormData[objLoopedInput.name] = objLoopedInput.value;
             }

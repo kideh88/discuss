@@ -3,7 +3,7 @@
 
 class UserController extends BaseController {
 
-    private $_objUserModel;
+    public $_objUserModel;
 
     public function __construct() {
         parent::__construct();
@@ -55,7 +55,11 @@ class UserController extends BaseController {
         $arrResponse = array(
             'success' => false
         );
-        $strEmail = $arrParameters['strEmail'];
+        if(!UserInputHelper::checkSpecialCharacters($arrParameters['strUsername'])) {
+            $arrResponse['intFeedbackCode'] = 19;
+            return $arrResponse;
+        }
+        $strEmail = UserInputHelper::clean($arrParameters['strEmail']);
         $strUsername = $arrParameters['strUsername'];
         $strPassword = $arrParameters['strPassword'];
         $strConfirmPassword = $arrParameters['strConfirmPassword'];
@@ -95,6 +99,7 @@ class UserController extends BaseController {
     }
 
     public function doUpdateProfile($arrParameters) {
+        $this->_objUserModel->setUserActive($_SESSION['intUserId']);
         $arrResponse['success'] = false;
         $arrResponse['intFeedbackCode'] = 17;
         if(!$_SESSION['blnLoggedIn']) {
@@ -102,9 +107,20 @@ class UserController extends BaseController {
             return $arrResponse;
         }
         $intUserId = $_SESSION['intUserId'];
-        $strImageName = $arrParameters['strImage'];
+
+        $arrProfileData = $this->_objUserModel->getUserProfile($intUserId);
+        if(!empty($_FILES) && $_FILES['image']['name'] !== '') {
+            $arrUploadInfo = $this->_objSIU->safeSave();
+            if($arrUploadInfo['success']) {
+                if($arrUploadInfo['filename'] !== '') {
+                    $arrProfileData['strProfileImage'] = $arrUploadInfo['filename'];
+                }
+                $arrResponse['strUploadError'] = $arrUploadInfo['error'];
+            }
+        }
+
         $strProfileText = $arrParameters['strText'];
-        $arrResponse['success'] = $this->_objUserModel->updateUserProfile($intUserId, $strImageName, $strProfileText);
+        $arrResponse['success'] = $this->_objUserModel->updateUserProfile($intUserId, $arrProfileData['strProfileImage'], $strProfileText);
         if($arrResponse['success']) {
             $arrResponse['intFeedbackCode'] = 16;
         }

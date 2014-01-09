@@ -3,6 +3,7 @@
 class UserModel extends BaseModel {
 
     private $_intBlockedTime;
+    private $_strDefaultText;
     protected $_strTablePrefix;
     protected $_objPDO;
 
@@ -11,6 +12,7 @@ class UserModel extends BaseModel {
         $this->_intBlockedTime = 300;
         $this->_strTablePrefix = $objBaseModel->_strTablePrefix;
         $this->_intActiveTime = 120;
+        $this->_strDefaultText = 'No text yet!';
     }
 
 
@@ -53,6 +55,8 @@ class UserModel extends BaseModel {
         $objNewUserPDO->bindValue(':token', $strToken, PDO::PARAM_STR);
 
         if($objNewUserPDO->execute()) {
+            $intNewUserId = $this->_objPDO->lastInsertId();
+            $this->_setEmptyUserInfo($intNewUserId);
             return true;
         }
         else{
@@ -288,9 +292,8 @@ class UserModel extends BaseModel {
     }
 
     public function updateUserProfile($intUserId, $strProfileImage, $strProfileText) {
-        $strUpdateProfileStatement = "INSERT INTO " . $this->_strTablePrefix . "user_info ( `image`, `text` )"
-            . " VALUES ( :image, :text ) WHERE `users_fk` = :userid"
-            . " ON DUPLICATE KEY UPDATE `image` = :image, `text` = :text";
+        $strUpdateProfileStatement = "UPDATE " . $this->_strTablePrefix . "user_info SET `image` = :image, "
+            . "`text` = :text WHERE `users_fk` = :userid";
 
         $objUpdateProfilePDO = $this->_objPDO->prepare($strUpdateProfileStatement);
         $objUpdateProfilePDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
@@ -306,7 +309,20 @@ class UserModel extends BaseModel {
     }
 
 
-//    private function _setEmptyUserInfo($intUserId) {
-//
-//    }
+    private function _setEmptyUserInfo($intUserId) {
+        $strNewUserStatement = "INSERT INTO " . $this->_strTablePrefix . "user_info ( `users_fk`, `text` ) "
+            . "VALUES ( :id, :text )";
+        $objNewUserPDO = $this->_objPDO->prepare($strNewUserStatement);
+        $objNewUserPDO->bindValue(':id', $intUserId, PDO::PARAM_INT);
+        $strDefaultText = $this->_strDefaultText;
+        $objNewUserPDO->bindValue(':text', $strDefaultText, PDO::PARAM_STR);
+        if($objNewUserPDO->execute()) {
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
 }
+

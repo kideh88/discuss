@@ -5,13 +5,14 @@ if((!isset($_GET["page"]) || $_GET["page"] === "frontpage")  && $_SESSION['blnLo
     header("Location: /discuss/index.php?page=lobby");
     exit;
 }
-
 require_once($_SERVER['DOCUMENT_ROOT'] . '/discuss/controllers/Base.controller.php');
 $objBaseController = new BaseController();
 
 $objBaseController->_requireController('User');
 $objUserController = new UserController();
-
+if($_SESSION['blnLoggedIn']) {
+    $objUserController->_objUserModel->setUserActive($_SESSION['intUserId']);
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -19,7 +20,7 @@ $objUserController = new UserController();
         <meta charset="UTF-8">
         <title>Discuss</title>
         <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
-        <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="css/styles.css?ver=1.1">
         <script src="js/general.js?ver=1.0"></script>
         <script src="js/ajax-connector.js?ver=1.0"></script>
         <script src="js/form-submit.js?ver=1.0"></script>
@@ -29,7 +30,7 @@ $objUserController = new UserController();
     <body>
         <div class="row head">
             <div class="container">
-                <h1 class="pull-left">Welcome to the chat</h1>
+                <a href="index.php?page=frontpage"><h1 class="pull-left" id="page-title">discuss</h1></a>
                 <? if (!isset($_GET["page"]) || $_GET["page"] == "frontpage"): ?>
                     <a href="index.php?page=lobby"><button type="button" id="continue" class="btn btn-primary pull-right">Continue without login</button></a>
                 <? else: ?>

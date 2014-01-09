@@ -3,7 +3,7 @@
 
 
 class BaseController {
-    protected $_strBasePath;
+    public $_strBasePath;
     protected $_objBaseModel;
 
     public function __construct($strPostRequest = null) {
@@ -21,11 +21,15 @@ class BaseController {
         AccessHelper::setAccessArray($arrAccessPermissions);
 
         require_once($this->_strBasePath . '/helpers/Feedback.helper.php');
+        require_once($this->_strBasePath . '/helpers/UserInput.helper.php');
 
         if(null !== $strPostRequest) {
             echo json_encode($this->_runRequest($strPostRequest));
         }
 
+        require_once($this->_strBasePath . '/models/SIU.class.php');
+        $this->_objSIU = new SafeImageUploader($this->_strBasePath . '/images/users/');
+        $this->_objSIU->setMaxDimensions(array('width' => 300, 'height' => 400));
     }
 
     private function _runRequest($strPostRequest) {

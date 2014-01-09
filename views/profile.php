@@ -4,15 +4,25 @@ $arrProfileData = $objUserController->getUserProfile($strUsername);
 $blnSameUser = false;
 if($_SESSION['blnLoggedIn']) {
     $blnSameUser = ($arrProfileData['intUserId'] === $_SESSION['intUserId']);
+    if($blnSameUser && isset($_POST['blnUpdateProfile'])) {
+        $strUserText = UserInputHelper::clean($_POST['strText']);
+        $arrParameters['strText'] = $strUserText;
+        $arrUpdateData = $objUserController->doUpdateProfile($arrParameters);
+        $arrProfileData = $objUserController->getUserProfile($strUsername);
+    }
 }
 ?>
 <?php if($blnSameUser && $_GET['edit']): ?>
     <div class="col-md-6">
         <h2>Edit Profile</h2>
-        <form method="post" onsubmit="sendFormData(event, reloadCallback)" data-type="User" data-action="doUpdateProfile" >
+        <form enctype="multipart/form-data" method="post" action="index.php?page=profile&user=<?php echo $_SESSION['strUsername'] ?>&edit=1" >
             <div class="form-group">
-                <label for="profileImage">User Image</label>
-                <input type="file" class="form-control" id="profileImage" name="arrImageFile">
+                <div id="editprofileImageLeft">
+                    <label for="profileImage">User Image</label>
+                    <input type="file" class="form-control" id="profileImage" name="image" >
+                </div>
+                <input type="hidden" name="blnUpdateProfile" value="1" />
+                <img src="images/users/<? echo $arrProfileData['strProfileImage']?>" id="editProfileImage" />
             </div>
             <div class="form-group">
                 <label for="profileText">About you</label>
@@ -37,7 +47,11 @@ if($_SESSION['blnLoggedIn']) {
             ?>
         </p>
         <?php if (!$blnSameUser && 0 !== $arrProfileData['intUserId']): ?>
-        <a href="#"><button type="button" class="btn btn-primary pull-right join">Start private chat</button></a>
+        <button type="button" class="btn btn-primary pull-right join">Start private chat</button>
+        <? endif; ?>
+
+        <?php if($blnSameUser): ?>
+        <a href="index.php?page=profile&user=<?php echo $_SESSION['strUsername'] ?>&edit=1"><button type="button" class="btn btn-primary pull-right join">Edit Profile</button></a>
         <? endif; ?>
 
     </div>

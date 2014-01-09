@@ -60,7 +60,6 @@ class SafeImageUploader {
             'success' => false,
             'error' => ''
         );
-
         $arrImageData = $this->checkImageData();
         if(isset($arrImageData['error'])) {
             $arrData['status'] = 6;

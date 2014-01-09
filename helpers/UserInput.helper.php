@@ -4,12 +4,22 @@ class UserInputHelper {
 
     // function is overkill and should be modified according to the user input
 
-    public static function clean($input) {
-        $input = mysql_real_escape_string($input);
-        $input = htmlspecialchars($input, ENT_IGNORE, 'utf-8');
-        $input = strip_tags($input);
-        $input = stripslashes($input);
-        return $input;
+    public static function clean($strInput) {
+        $strInput = htmlspecialchars($strInput, ENT_IGNORE, 'utf-8');
+        $strInput = strip_tags($strInput);
+        $strInput = stripslashes($strInput);
+        return $strInput;
+    }
+
+    public static function checkSpecialCharacters($strInput) {
+        $strPattern = '/^\w+$/';
+        preg_match($strPattern, $strInput, $arrMatch);
+        if(!$arrMatch) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
 }

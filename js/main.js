@@ -14,4 +14,17 @@ $( document ).ready(function() {
         });
     }
 
+    var objChatForm = document.getElementById('newPublicChatForm');
+    var objButtonHideChatForm = document.getElementById('hideChatForm');
+    var objButtonShowChatForm = document.getElementById('showChatForm');
+    if(objChatForm && objButtonShowChatForm && objButtonHideChatForm) {
+        addEvent(objButtonShowChatForm, 'click', function() {
+            hide(objButtonShowChatForm);
+            show(objChatForm);
+        });
+        addEvent(objButtonHideChatForm, 'click', function() {
+            hide(objChatForm);
+            show(objButtonShowChatForm)
+        });
+    }
 });

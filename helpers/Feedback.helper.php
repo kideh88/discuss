@@ -21,6 +21,14 @@ class FeedbackHelper {
         , 16 => 'Notice: Your profile is now updated'
         , 17 => 'Error: Could not update profile'
         , 18 => 'Unknown error!'
+        , 19 => 'Error: Special characters not allowed in username'
+        , 20 => 'Error: Special characters not allowed in room name'
+        , 21 => 'Error: Chat room with this name already exists'
+        , 22 => 'Error: Could not create chat room, please try again'
+        , 23 => 'Error: Could not join chat room, please try again'
+        , 24 => 'Error: You are not a member of this chat room'
+        , 25 => 'Error: Could not invite user to chat room, please try again'
+        , 26 => 'Notice: User has been invited'
     );
 
     public static function getMessage($intCode) {
