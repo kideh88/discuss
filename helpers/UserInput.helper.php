@@ -2,10 +2,47 @@
 
 class UserInputHelper {
 
-    // function is overkill and should be modified according to the user input
+    private static $_allowedProfileTags = array(
+        "<p>",
+        "<strong>",
+        "<ol>",
+        "<li>",
+        "<table>",
+        "<tbody>",
+        "<tr>",
+        "<td>",
+        "<br />",
+        "<br>",
+        "<img>",
+        "<a>",
+        "<em>",
+        "<span>",
+        "<sup>",
+        "<ul>",
+        "<blockqoute>",
+        "<hr>",
+        "<hr />",
+        "<code>"
+    );
+    private static $_allowedChatTags = array(
+        "<strong>",
+        "<em>",
+        "<span>"
+    );
+
+    public static function cleanUserInput($strInput, $strType) {
+        if ($strType === 'profile') {
+            $_allowedTags = implode(",", self::$_allowedProfileTags);
+        }
+        else if ($strType === 'chat') {
+            $_allowedTags = implode(",", self::$_allowedChatTags);
+        }
+        $strStrippedHtmlContent = strip_tags($strInput, $_allowedTags);
+        return $strStrippedHtmlContent;
+    }
 
     public static function clean($strInput) {
-        $strInput = htmlspecialchars($strInput, ENT_IGNORE, 'utf-8');
+        $strInput = htmlspecialchars($strInput);
         $strInput = strip_tags($strInput);
         $strInput = stripslashes($strInput);
         return $strInput;

@@ -38,4 +38,12 @@
         </div>
         <button type="submit" class="btn btn-primary">Register</button>
     </form>
+    <span>Password meets requirements: <span id="result"></span></span>
+        <div>
+            <div id="lowercase">At least 2 lowercase characters</div>
+            <div id="uppercase">At least 2 uppercase characters</div>
+            <div id="numbers">At least 2 numbers</div>
+            <div id="specialchars">At least 2 special characters</div>
+            <div id="length">Password should be minimum 8 characters</div>
+        </div>
 </div>

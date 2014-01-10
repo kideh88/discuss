@@ -16,6 +16,8 @@ class BaseController {
         }
         $this->_objBaseModel = $objBaseModel;
 
+        require_once($this->_strBasePath . '/helpers/Cookie.helper.php');
+
         require_once($this->_strBasePath . '/helpers/Access.helper.php');
         require_once($this->_strBasePath . '/config/Access.include.php');
         AccessHelper::setAccessArray($arrAccessPermissions);
@@ -30,6 +32,7 @@ class BaseController {
         require_once($this->_strBasePath . '/models/SIU.class.php');
         $this->_objSIU = new SafeImageUploader($this->_strBasePath . '/images/users/');
         $this->_objSIU->setMaxDimensions(array('width' => 300, 'height' => 400));
+
     }
 
     private function _runRequest($strPostRequest) {

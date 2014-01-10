@@ -26,4 +26,13 @@ class HashHelper {
         return $strSalt;
     }
 
+    public static function checkPasswordStrength($strPassword) {
+        // RegExp pattern, same as JS
+        $regExp = '/^(?=(?:[^A-Z]*[A-Z]){2,})(?=(?:[^a-z]*[a-z]){2,})(?=(?:[^\d]*[\d]){2})(?=(?:[^\W]*[\W]){2})[A-Za-z\d\W]{8,}$/';
+
+        // True if password matches the pattern - which means the password is strong
+        return preg_match($regExp, $strPassword);
+    }
+
+
 }

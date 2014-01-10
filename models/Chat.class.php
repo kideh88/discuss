@@ -38,14 +38,14 @@ class ChatModel extends BaseModel {
     public function checkDuplicateRoom($strRoomName) {
         $intExisting = 0;
 
-        $strCheckExistingStatement = "SELECT COUNT(id) FROM " . $this->_strTablePrefix . "chat_rooms WHERE name "
+        $strCheckExistingStatement = "SELECT id FROM " . $this->_strTablePrefix . "chat_rooms WHERE name "
             . "LIKE :name AND is_closed = 0 ";
         $objExistUserPDO = $this->_objPDO->prepare($strCheckExistingStatement);
         $objExistUserPDO->bindValue(':name', $strRoomName, PDO::PARAM_STR);
         if($objExistUserPDO->execute()) {
             $intExisting = $objExistUserPDO->fetchColumn();
         }
-        return (0 < $intExisting);
+        return $intExisting;
     }
 
     public function getOpenPrivateChat($intUserId, $intInvitedId) {
@@ -95,10 +95,11 @@ class ChatModel extends BaseModel {
 
     }
 
-    public function getPublicRoomList() {
+    public function getChatRoomList($blnIsPublic) {
         $strPublicChatsStatement = "SELECT id as intChatId , name as strRoomName FROM " . $this->_strTablePrefix . "chat_rooms "
-            . "WHERE is_public = 1 AND is_closed = 0";
+            . "WHERE is_public = :public AND is_closed = 0";
         $objPublicChatsPDO = $this->_objPDO->prepare($strPublicChatsStatement);
+        $objPublicChatsPDO->bindValue(':public', $blnIsPublic, PDO::PARAM_INT);
         if($objPublicChatsPDO->execute()) {
             $arrPublicChatsData = $objPublicChatsPDO->fetchAll(PDO::FETCH_ASSOC);
             return $arrPublicChatsData;
@@ -121,12 +122,90 @@ class ChatModel extends BaseModel {
     }
 
     public function setUserLeftRoom($intUserId, $intChatId) {
-
-        $this->_setChatRoomClosed($intChatId);
+        $strLeaveStatement = "DELETE FROM " . $this->_strTablePrefix . "chat_members "
+            . "WHERE users_fk = :userid AND chat_rooms_fk = :chatid ";
+        $objLeaveRoomPDO = $this->_objPDO->prepare($strLeaveStatement);
+        $objLeaveRoomPDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        $objLeaveRoomPDO->bindValue(':chatid', $intChatId, PDO::PARAM_INT);
+        if($objLeaveRoomPDO->execute()) {
+            $this->_setChatRoomClosed($intChatId);
+            return true;
+        }
+        return false;
 
     }
 
     private function _setChatRoomClosed($intChatId) {
-        // close room if empty
+        $strCheckMembersStatement = "SELECT COUNT(users_fk) FROM " . $this->_strTablePrefix . "chat_members "
+            . "WHERE chat_rooms_fk = :chatid";
+        $objMembersPDO = $this->_objPDO->prepare($strCheckMembersStatement);
+        $objMembersPDO->bindValue(':chatid', $intChatId, PDO::PARAM_INT);
+        if($objMembersPDO->execute()) {
+            $intExisting = $objMembersPDO->fetchColumn();
+            if($intExisting > 0) {
+                return true;
+            }
+            else {
+                $strCloseRoomStatement = "DELETE FROM " . $this->_strTablePrefix . "chat_rooms "
+                    . "WHERE id = :chatid ";
+                $objCloseRoomPDO = $this->_objPDO->prepare($strCloseRoomStatement);
+                $objCloseRoomPDO->bindValue(':chatid', $intChatId, PDO::PARAM_INT);
+                if($objCloseRoomPDO->execute()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+
     }
+
+    public function getChatRoomData($intChatId) {
+        $strChatDataStatement = "SELECT name, is_public, is_closed FROM " . $this->_strTablePrefix . "chat_rooms "
+            . "WHERE id = :chatid";
+        $objChatDataPDO = $this->_objPDO->prepare($strChatDataStatement);
+        $objChatDataPDO->bindValue(':chatid', $intChatId, PDO::PARAM_INT);
+        if($objChatDataPDO->execute()) {
+            $arrChatData = $objChatDataPDO->fetch(PDO::FETCH_ASSOC);
+            return $arrChatData;
+        }
+        return false;
+    }
+
+    public function getChatRoomMessages($intChatId, $intLastMessageId) {
+        $strChatStatement = "SELECT messages.id as intMessageId, messages.message as strMessage, messages.time as "
+            . "intTime, users.user_name as strUsername FROM " . $this->_strTablePrefix . "chat_messages as messages "
+            . "LEFT JOIN " . $this->_strTablePrefix . "users as users ON messages.users_fk = users.id "
+            . "WHERE chat_rooms_fk = :chatid";
+        if(0 < $intLastMessageId) {
+            $strChatStatement .= " AND messages.id > :lastid ";
+        }
+        $objChatMessagesPDO = $this->_objPDO->prepare($strChatStatement);
+        $objChatMessagesPDO->bindValue(':chatid', $intChatId, PDO::PARAM_INT);
+        if(0 < $intLastMessageId) {
+            $objChatMessagesPDO->bindValue(':lastid', $intLastMessageId, PDO::PARAM_INT);
+        }
+        if($objChatMessagesPDO->execute()) {
+            $arrChatMessages = $objChatMessagesPDO->fetchAll(PDO::FETCH_ASSOC);
+            return $arrChatMessages;
+        }
+        return false;
+    }
+
+    public function insertNewChatMessage($intUserId, $intChatId, $strMessage, $intTimestamp){
+        $strNewMessageStatement = "INSERT INTO " . $this->_strTablePrefix . "chat_messages (`chat_rooms_fk`, "
+            . "`message`, `time`, `users_fk` ) VALUES ( :chatid, :msg, :time, :userid )";
+
+        $objChatMessagePDO = $this->_objPDO->prepare($strNewMessageStatement);
+        $objChatMessagePDO->bindValue(':chatid', $intChatId, PDO::PARAM_INT);
+        $objChatMessagePDO->bindValue(':msg', $strMessage, PDO::PARAM_STR);
+        $objChatMessagePDO->bindValue(':time', $intTimestamp, PDO::PARAM_INT);
+        $objChatMessagePDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        if($objChatMessagePDO->execute()) {
+            return true;
+        }
+        return false;
+
+    }
+
+
 }

@@ -274,6 +274,18 @@ class UserModel extends BaseModel {
         }
     }
 
+    public function checkUserIsAdmin($intUserId) {
+        $blnIsAdmin = 0;
+        $strAdminStatement = "SELECT is_admin FROM " . $this->_strTablePrefix ."users WHERE id = :userid";
+        $objAdminPDO = $this->_objPDO->prepare($strAdminStatement);
+        $objAdminPDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        if($objAdminPDO->execute()) {
+            $blnIsAdmin = $objAdminPDO->fetchColumn();
+        }
+        return (bool)$blnIsAdmin;
+    }
+
+
     public function getUserProfile($intUserId) {
         $arrUserData = array();
         $strGetProfileStatement = "SELECT image, text from " . $this->_strTablePrefix ."user_info WHERE users_fk = :id";
@@ -322,6 +334,33 @@ class UserModel extends BaseModel {
         else{
             return false;
         }
+    }
+
+    public function setCookieHash($intUserId, $strCookieHash) {
+        $strCookieHashStatement = "INSERT INTO " . $this->_strTablePrefix . "user_cookies ( `users_fk`, `hash` ) "
+            . "VALUES ( :userid, :hash )";
+        $objCookieHashPDO = $this->_objPDO->prepare($strCookieHashStatement);
+        $objCookieHashPDO->bindValue(':userid', $intUserId, PDO::PARAM_INT);
+        $objCookieHashPDO->bindValue(':hash', $strCookieHash, PDO::PARAM_STR);
+        if($objCookieHashPDO->execute()) {
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+
+    public function getCookieUser($strCookieHash) {
+        $intUserId = 0;
+        $strCookieHashStatement = "SELECT users_fk FROM " . $this->_strTablePrefix . "user_cookies "
+            . " WHERE `hash` LIKE :hash ";
+        $objCookieHashPDO = $this->_objPDO->prepare($strCookieHashStatement);
+        $objCookieHashPDO->bindValue(':hash', $strCookieHash, PDO::PARAM_STR);
+        if($objCookieHashPDO->execute()) {
+            $intUserId = $objCookieHashPDO->fetchColumn();
+        }
+        return $intUserId;
     }
 
 }

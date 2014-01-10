@@ -30,6 +30,10 @@ class FeedbackHelper {
         , 25 => 'Error: Could not invite user to chat room, please try again'
         , 26 => 'Notice: User has been invited'
         , 27 => 'Notice: No Public chats were found'
+        , 28 => 'Error: Chat room is closed or does not exist'
+        , 29 => 'Notice: No newer chat messages'
+        , 30 => 'Error: Could not send chat message'
+        , 31 => 'Notice: No Private chats were found'
     );
 
     public static function getMessage($intCode) {

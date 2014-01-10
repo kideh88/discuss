@@ -46,9 +46,32 @@ class UserController extends BaseController {
         $this->_objUserModel->resetLoginAttempts($arrSessionData['intUserId']);
         $this->_objUserModel->setUserActive($arrSessionData['intUserId']);
         SessionHelper::setSessionValues($arrSessionData);
+        if(true === $arrParameters['blnRemember']) {
+            $strCookieHash = HashHelper::createSalt(20) . time();
+            CookieHelper::put('discuss', $strCookieHash);
+            $this->_objUserModel->setCookieHash($arrSessionData['intUserId'], $strCookieHash);
+        }
 
         $arrResponse['success'] = true;
         return $arrResponse;
+    }
+
+    public function doUserCookieLogin($strCookieHash) {
+        $intUserId = (int)$this->_objUserModel->getCookieUser($strCookieHash);
+        if(0 === $intUserId) {
+            return false;
+        }
+        $strUsername = $this->_objUserModel->getUsernameById($intUserId);
+        $blnIsAdmin = $this->_objUserModel->checkUserIsAdmin($intUserId);
+        $arrSessionData['blnLoggedIn'] = true;
+        $arrSessionData['intUserId'] = $intUserId;
+        $arrSessionData['blnIsAdmin'] = $blnIsAdmin;
+        $arrSessionData['strUsername'] = $strUsername;
+
+        SessionHelper::setSessionValues($arrSessionData);
+
+        return true;
+
     }
 
     public function doUserRegister($arrParameters) {
@@ -69,9 +92,11 @@ class UserController extends BaseController {
             return $arrResponse;
         }
 
-        // Insert password strength test here - return false if it fails!
-
         if($strPassword !== $strConfirmPassword) {
+            $arrResponse['intFeedbackCode'] = 11;
+            return $arrResponse;
+        }
+        if(!HashHelper::checkPasswordStrength($strPassword)) {
             $arrResponse['intFeedbackCode'] = 11;
             return $arrResponse;
         }
@@ -80,8 +105,6 @@ class UserController extends BaseController {
             $arrResponse['intFeedbackCode'] = 12;
             return $arrResponse;
         }
-
-        // Email part here
 
         $arrResponse['success'] = true;
         $arrResponse['intFeedbackCode'] = 13;
@@ -94,6 +117,7 @@ class UserController extends BaseController {
         if($_SESSION['blnLoggedIn']) {
             $arrResponse['success'] = $this->_objUserModel->userLoggedOut();
             $this->_objUserModel->setUserInactive($_SESSION['intUserId']);
+            CookieHelper::delete('discuss');
         }
         return $arrResponse;
     }
@@ -124,6 +148,7 @@ class UserController extends BaseController {
         if($arrResponse['success']) {
             $arrResponse['intFeedbackCode'] = 16;
         }
+
         return $arrResponse;
     }
 

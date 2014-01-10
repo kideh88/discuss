@@ -1,12 +1,12 @@
 <?php
-if (isset($_GET["chatobject"])) {
-    $user = "get chatrooms by id";
-} else {
-    header('Location: index.php?page=404');
+$intChatId = (int)$_GET["chat"];
+$arrChatAccess = $objChatController->checkValidChat($intChatId);
+if($arrChatAccess['success']) {
+    $intValidChatId = $intChatId;
 }
 ?>
 <div class="col-md-4">
-    <h2>Active chats</h2>
+    <h2>Active chats <span id="countActiveChats"></span></h2>
     <table class="table chatlist">
         <thead>
             <tr>
@@ -14,31 +14,37 @@ if (isset($_GET["chatobject"])) {
                 <th>Number of users</th>
             </tr>
         </thead>
-        <tbody>
-            <tr>
-                <td>Dummychat 1</td>
-                <td>4</td>
-            </tr>
-            <tr>
-                <td>Dummychat 2</td>
-                <td>2</td>
-            </tr>
-            <tr>
-                <td>Dummychat 3</td>
-                <td>50023</td>
-            </tr>
+        <tbody id="activeChatsList">
         </tbody>
     </table>
-    <a href="index.php?page=lobby">join more chats</a>
+    <a href="index.php?page=lobby"><button type="button" class="btn btn-primary pull-right join">Back to lobby</button></a>
 </div>
 <div class="col-md-8">
     <h2>Chatwindow</h2>
-    <?php // include chatroom with ajax ?>
-    <div class="chatwindow">
-        Dummy: Hey!<br>
-        Dummy2: Hey!<br>
-        Dummy: WAZZZUUUUUUUPPP!?!??!?!?!?!<br>
-        Dummy2: Not much<br>
+    <?php if($arrChatAccess['success']): ?>
+    <div id="chatWindow">
+        <ul id="chatMessageList">
+
+        </ul>
     </div>
-    <textarea class="wysiwyg">WYSIWYG</textarea>
+    <form method="post" onsubmit="sendFormData(event, showResponse)" data-type="Chat" data-action="sendChatMessage" >
+        <div class="form-group">
+            <textarea id="chatEditor" name="strChatMessage"></textarea>
+            <input type="hidden" name="strChatId" value="<?php echo $intValidChatId; ?>" >
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+
+
+
+    <script type="text/javascript">
+        var intChatRoomId = <?php echo $intValidChatId; ?>;
+        var intLastMessageId = 0;
+        setInterval(function() {
+            updateChatPage();
+        }, 500);
+    </script>
+<?php else: ?>
+    <p><? echo $arrChatAccess['strMessage'] ?></p>
+<?php endif; ?>
 </div>

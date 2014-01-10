@@ -2,6 +2,8 @@
 $arrUserList = $objUserController->getOnlineUsers();
 $arrPublicChatList = $objChatController->getPublicChatList();
 $arrPublicChatList = $arrPublicChatList['arrPublicChats'];
+$arrPrivateChatList = $objChatController->getPrivateChatList();
+$arrPrivateChatList = $arrPrivateChatList['arrPrivateChats'];
 ?>
 <div class="col-md-4">
 
@@ -13,10 +15,12 @@ $arrPublicChatList = $arrPublicChatList['arrPublicChats'];
         </thead>
         <tbody>
             <?php foreach($arrUserList as $arrUser): ?>
+                <?php if((int)$arrUser['id'] !== $_SESSION['intUserId']): ?>
             <tr>
                 <td><a href="index.php?page=profile&amp;user=<? echo $arrUser['user_name']?>"><? echo $arrUser['user_name'] ?></a><td>
-                <td><button type="button" class="btn btn-primary pull-right join">Start private chat</button><td>
+                <td><a href="#" class="joinPrivate" data-user-id="<? echo (int)$arrUser['id']; ?>"><button type="button" class="btn btn-primary pull-right join">Start private chat</button></a><td>
             </tr>
+                <? endif; ?>
             <? endforeach; ?>
         </tbody>
     </table>
@@ -38,7 +42,12 @@ $arrPublicChatList = $arrPublicChatList['arrPublicChats'];
                 <td><? echo $arrPublicRoom['strRoomName']?></td>
                 <td><? echo $arrPublicRoom['intUsers']?></td>
                 <td><? echo $arrPublicRoom['strUsers']?><td>
-                <td><a href="index.php?page=chat&amp;chat=<? echo $arrPublicRoom['intChatId']?>"><button type="button" class="btn btn-primary pull-right join">Join</button></a><td>
+                <td>
+                    <?php if($arrPublicRoom['blnIsMember'] === true): ?>
+                    <a href="#" class="leaveRoom"><button type="button" data-chat-id="<? echo $arrPublicRoom['intChatId']?>" class="btn btn-primary pull-right join">Leave</button></a>
+                    <? endif; ?>
+                    <a href="index.php?page=chat&amp;chat=<? echo $arrPublicRoom['intChatId']?>"><button type="button" class="btn btn-primary pull-right join">Join</button></a>
+                <td>
             </tr>
         <? endforeach; ?>
         </tbody>
@@ -58,10 +67,35 @@ $arrPublicChatList = $arrPublicChatList['arrPublicChats'];
     <?php endif ?>
     <div class="clearfix"></div>
     <h2>Private chats</h2>
-    <?php
-    // If no private chats
-    echo "You have no private chats"
-    ?>
+    <?php if(!$_SESSION['blnLoggedIn']): ?>
+        <p>You need to log in to see private chats</p>
+    <? else: ?>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Number of users</th>
+            <th>Users<th>
+            <th><th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach($arrPrivateChatList as $arrPrivateRoom): ?>
+            <?php if($arrPrivateRoom['blnIsMember'] === true): ?>
+            <tr>
+                <td><? echo $arrPrivateRoom['strRoomName']?></td>
+                <td><? echo $arrPrivateRoom['intUsers']?></td>
+                <td><? echo $arrPrivateRoom['strUsers']?><td>
+                <td>
+                    <a href="#" class="leaveRoom"><button type="button" data-chat-id="<? echo $arrPrivateRoom['intChatId']?>" class="btn btn-primary pull-right join">Leave</button></a>
+                    <a href="index.php?page=chat&amp;chat=<? echo $arrPrivateRoom['intChatId']?>"><button type="button" class="btn btn-primary pull-right join">Join</button></a>
+                <td>
+            </tr>
+            <? endif; ?>
+        <? endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
 
 
 </div>
