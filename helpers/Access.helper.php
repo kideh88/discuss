@@ -18,8 +18,10 @@ class AccessHelper {
         if(!self::validateMethod($strControllerName, $strMethodName)) {
             return false;
         }
-        if(!self::validateParameters($strControllerName, $strMethodName, $arrParameters)) {
-            return false;
+        if(count($arrParameters) > 0) {
+            if(!self::validateParameters($strControllerName, $strMethodName, $arrParameters)) {
+                return false;
+            }
         }
 
         $arrRequest = array(
@@ -56,7 +58,6 @@ class AccessHelper {
         return true;
 
     }
-
 
     public static function setAccessArray($arrConfig) {
         self::$_arrAccess = $arrConfig;
